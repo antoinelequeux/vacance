@@ -2,33 +2,97 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Vote Elo - 10 Images</title>
+  <title>Comparaison d'images (Elo)</title>
+  <!-- 1) Google Font : Poppins -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
+
+  <!-- 2) Notre CSS -->
   <style>
-    body { font-family: sans-serif; max-width: 600px; margin: 20px auto; }
-    h1, h2 { text-align: center; }
-    .hidden { display: none; }
-    .image-container { display: flex; justify-content: space-around; margin-top: 20px; }
-    .option { width: 45%; text-align: center; }
-    img { max-width: 100%; height: auto; border: 1px solid #ccc; margin-bottom: 5px; }
-    button { margin: 5px; padding: 10px 20px; font-size: 16px; cursor: pointer; }
-    .results { margin: 20px 0; }
-    .results li { margin-bottom: 5px; }
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #dfe9f3 0%, #ffffff 100%);
+      margin: 0;
+      padding: 20px;
+      text-align: center;
+    }
+    
+    h1 {
+      font-size: 2em;
+      margin-bottom: 10px;
+      color: #333;
+    }
+    
+    button {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 10px 16px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    
+    button:hover {
+      background-color: #45a049;
+    }
+    
+    #startScreen, #duelScreen, #resultsScreen {
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      margin: 20px auto;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      max-width: 600px;
+    }
+    
+    .image-container {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+    
+    .option {
+      flex: 1 1 45%;
+      text-align: center;
+      margin: 10px;
+    }
+    
+    img {
+      max-width: 100%;
+      height: auto;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      box-shadow: 2px 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .results li {
+      margin-bottom: 5px;
+    }
+
+    .hidden {
+      display: none;
+    }
   </style>
 </head>
+
 <body>
 
 <h1>Comparaison d'images (Elo)</h1>
 
 <!-- Écran 1 : entrer nom + démarrer -->
 <div id="startScreen">
-  <p>Entrez votre nom : <input type="text" id="playerName" placeholder="Ex: Alice"></p>
+  <p>Entrez votre nom : <input type="text" id="playerName" placeholder="Ex: Antoine le bg"></p>
   <button onclick="startVoting()">Commencer</button>
 </div>
 
 <!-- Écran 2 : duels -->
 <div id="duelScreen" class="hidden">
-  <h2>Votez sur votre image préférée</h2>
-  <p>Il y aura 20 duels.</p>
+  <h2>Votez pour votre image préférée</h2>
+  <p>Il y aura 25 duels.</p>
+  
   <div id="duelContainer" class="image-container">
     <div class="option">
       <img id="leftImg" src="" alt="">
@@ -43,6 +107,7 @@
       <button onclick="choose('right')">Choisir cette image</button>
     </div>
   </div>
+  
   <p id="progress"></p>
 </div>
 
@@ -177,7 +242,7 @@ function fetchCurrentRatings() {
 function startVoting() {
   let nameInput = document.getElementById("playerName");
   if (!nameInput.value) {
-    alert("Merci d'entrer un nom !");
+    alert("Merci d'entrer un nom connard !");
     return;
   }
   playerName = nameInput.value;
@@ -277,12 +342,12 @@ function endVoting() {
 
   fetch(SCRIPT_URL, {
     method: 'POST',
-    body: formData // ✅ Envoie les données en form-data
+    body: formData
   })
   .then(response => response.json())
   .then(data => {
     if (data.status === "success") {
-      displayFinalResults(data.items);
+      displayFinalResults(data.items, data.participants);
     } else {
       alert("Erreur doPost: " + data.message);
     }
@@ -293,12 +358,20 @@ function endVoting() {
 }
 
 
-function displayFinalResults(finalItems) {
-  // finalItems est déjà trié par rating décroissant (voir doPost dans Apps Script)
-  let html = "";
+
+function displayFinalResults(finalItems, participants) {
+  let html = "<h3>Classement global</h3><ol>";
   finalItems.forEach(it => {
     html += `<li>${it.title} (Elo: ${it.rating})</li>`;
   });
+  html += "</ol>";
+
+  html += "<h3>Participants</h3><ul>";
+  participants.forEach(name => {
+    html += `<li>${name}</li>`;
+  });
+  html += "</ul>";
+
   document.getElementById("finalRanking").innerHTML = html;
   document.getElementById("resultsScreen").classList.remove("hidden");
 }

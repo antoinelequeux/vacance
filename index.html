@@ -402,6 +402,11 @@ participants.forEach(p => {
   html += `<h4>${p.name}</h4>`;
   html += `<table style="margin:auto; border-collapse: collapse;">`;
   html += `<tr><th style="border-bottom: 1px solid #ccc; padding: 5px;">Destination</th><th style="border-bottom: 1px solid #ccc; padding: 5px;">Score</th></tr>`;
+  if (!p.personalRanking) {
+  // Par exemple, on affiche juste qu'il n'a pas voté
+  html += `<h4>${p.name}</h4><p>(Aucun vote)</p>`;
+  return;
+}
 
   let rankingArray = p.personalRanking.split(", ").map(entry => {
     let match = entry.match(/(.+)\((\d+)\)$/);
@@ -424,7 +429,7 @@ participants.forEach(p => {
 
 
   document.getElementById("finalRanking").innerHTML = html;
-  document.getElementById("resultsScreen").classList.remove("hidden");
+  //document.getElementById("resultsScreen").classList.remove("hidden");
 }
 
 
@@ -439,7 +444,7 @@ function shuffle(array) {
 
   function showResults() {
   // Masquer l'écran de démarrage
-  document.getElementById("startScreen").classList.add("hidden");
+  //document.getElementById("startScreen").classList.add("hidden");
 
   // Appeler le doGet pour récupérer les infos (items, participants)
   fetch(SCRIPT_URL)

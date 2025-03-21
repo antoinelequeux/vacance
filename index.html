@@ -396,11 +396,32 @@ function displayFinalResults(finalItems, participants) {
   });
   html += "</ol>";
 
-  html += "<h3>Classement perso de chaque participant</h3><ul>";
-  participants.forEach(p => {
-    html += `<li><b>${p.name}</b> : ${p.personalRanking}</li>`;
+  html += "<h3>Classement perso de chaque participant</h3>";
+
+participants.forEach(p => {
+  html += `<h4>${p.name}</h4>`;
+  html += `<table style="margin:auto; border-collapse: collapse;">`;
+  html += `<tr><th style="border-bottom: 1px solid #ccc; padding: 5px;">Destination</th><th style="border-bottom: 1px solid #ccc; padding: 5px;">Score</th></tr>`;
+
+  let rankingArray = p.personalRanking.split(", ").map(entry => {
+    let match = entry.match(/(.+)\((\d+)\)$/);
+    if (match) {
+      return { title: match[1], score: parseInt(match[2]) };
+    } else {
+      return null;
+    }
+  }).filter(x => x !== null);
+
+  rankingArray.forEach(entry => {
+    html += `<tr>
+      <td style="padding: 5px; border-bottom: 1px solid #eee;">${entry.title}</td>
+      <td style="padding: 5px; border-bottom: 1px solid #eee; text-align:center;">${entry.score}</td>
+    </tr>`;
   });
-  html += "</ul>";
+
+  html += `</table><br>`;
+});
+
 
   document.getElementById("finalRanking").innerHTML = html;
   document.getElementById("resultsScreen").classList.remove("hidden");

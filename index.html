@@ -315,11 +315,9 @@ items.forEach((item, i) => {
 });
 
 
-// Trier par score croissant => les duels les plus intéressants en premier
-scoredPairs.sort((a, b) => a.score - b.score);
 
-// Sélectionner les NB_DUELS premiers duels
-remainingPairs = scoredPairs.slice(0, NB_DUELS).map(p => p.pair);
+
+
 
 // Tu peux mettre à jour freqMap ici si tu veux l'utiliser plus loin
 

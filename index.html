@@ -271,26 +271,17 @@ function updateElo(idxW, idxL) {
  * { name, duels: [ {winner, loser}, ... ] }
  */
 function endVoting() {
-  document.getElementById("duelScreen").classList.add("hidden");
-  
-  let payload = {
-    name: playerName,
-    duels: results
-  };
+  const formData = new URLSearchParams();
+  formData.append("name", playerName);
+  formData.append("duels", JSON.stringify(results));
 
-const formData = new URLSearchParams();
-formData.append("name", playerName);
-formData.append("duels", JSON.stringify(results));
-
-fetch(SCRIPT_URL, {
-  method: 'POST',
-  body: formData 
-})
-
-  .then(r => r.json())
+  fetch(SCRIPT_URL, {
+    method: 'POST',
+    body: formData // ✅ Envoie les données en form-data
+  })
+  .then(response => response.json())
   .then(data => {
     if (data.status === "success") {
-      // data.items => le classement final
       displayFinalResults(data.items);
     } else {
       alert("Erreur doPost: " + data.message);
@@ -300,6 +291,7 @@ fetch(SCRIPT_URL, {
     alert("Erreur doPost fetch : " + err);
   });
 }
+
 
 function displayFinalResults(finalItems) {
   // finalItems est déjà trié par rating décroissant (voir doPost dans Apps Script)

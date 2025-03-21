@@ -400,16 +400,18 @@ function displayFinalResults(finalItems, participants) {
   html += "<h3>Classement perso de chaque participant</h3>";
 
   participants.forEach(p => {
-    // Afficher toujours le nom du participant
-    html += `<h4>${p.name}</h4>`;
+    // Utilise une valeur par défaut si le nom n'est pas défini
+    let participantName = (typeof p.name !== "undefined" && p.name.trim() !== "") ? p.name : "Anonyme";
+    html += `<h4>${participantName}</h4>`;
     html += `<table style="margin:auto; border-collapse: collapse;">`;
     html += `<tr>
                <th style="border-bottom: 1px solid #ccc; padding: 5px;">Destination</th>
                <th style="border-bottom: 1px solid #ccc; padding: 5px;">Score</th>
              </tr>`;
-    
-    // Si p.personalRanking existe et n'est pas vide, on affiche les lignes correspondantes
-    if (p.personalRanking) {
+
+    // Vérifier que p.personalRanking est défini et non vide
+    if (typeof p.personalRanking !== "undefined" && p.personalRanking.trim() !== "") {
+      // On essaye d'interpréter le classement personnel selon le format "Titre(score), Titre(score), ..."
       let rankingArray = p.personalRanking.split(", ").map(entry => {
         let match = entry.match(/(.+)\((\d+)\)$/);
         if (match) {
@@ -418,12 +420,21 @@ function displayFinalResults(finalItems, participants) {
         return null;
       }).filter(x => x !== null);
 
-      rankingArray.forEach(entry => {
-        html += `<tr>
-                   <td style="padding: 5px; border-bottom: 1px solid #eee;">${entry.title}</td>
-                   <td style="padding: 5px; border-bottom: 1px solid #eee; text-align:center;">${entry.score}</td>
-                 </tr>`;
-      });
+      // Si le format correspond, on affiche chaque ligne
+      if (rankingArray.length > 0) {
+        rankingArray.forEach(entry => {
+          html += `<tr>
+                     <td style="padding: 5px; border-bottom: 1px solid #eee;">${entry.title}</td>
+                     <td style="padding: 5px; border-bottom: 1px solid #eee; text-align:center;">${entry.score}</td>
+                   </tr>`;
+        });
+      } else {
+        // Sinon, affiche la chaîne brute
+        html += `<tr><td colspan="2" style="padding: 5px; text-align: center;">${p.personalRanking}</td></tr>`;
+      }
+    } else {
+      // Si aucun classement personnel n'est fourni, affiche une ligne vide ou un message sobre
+      html += `<tr><td colspan="2" style="padding: 5px; text-align: center;">Aucun résultat</td></tr>`;
     }
     html += `</table><br>`;
   });
@@ -431,6 +442,7 @@ function displayFinalResults(finalItems, participants) {
   document.getElementById("finalRanking").innerHTML = html;
   document.getElementById("resultsScreen").classList.remove("hidden");
 }
+
 
 
 

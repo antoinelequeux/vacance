@@ -253,16 +253,34 @@ function startVoting() {
 
   document.getElementById("startScreen").classList.add("hidden");
 
-  // Générez un set de NB_DUELS paires (aléatoires) depuis les 45 paires possibles (10 items => C(10,2) = 45)
-  let allPairs = [];
-  for (let i = 0; i < NB_ITEMS; i++) {
-    for (let j = i + 1; j < NB_ITEMS; j++) {
-      allPairs.push([i, j]);
-    }
+  // === SMART SAMPLING ===
+let allPairs = [];
+for (let i = 0; i < NB_ITEMS; i++) {
+  for (let j = i + 1; j < NB_ITEMS; j++) {
+    allPairs.push([i, j]);
   }
-  shuffle(allPairs);
+}
 
-  remainingPairs = allPairs.slice(0, NB_DUELS);
+// Fréquence initiale à zéro
+let freqMap = new Array(NB_ITEMS).fill(0);
+
+// On attribue un "score d'intérêt" à chaque paire
+let scoredPairs = allPairs.map(([i, j]) => {
+  let eloDiff = Math.abs(items[i].elo - items[j].elo);          // priorité aux duels équilibrés
+  let freqScore = freqMap[i] + freqMap[j];                      // priorité aux moins vus
+  let interestScore = eloDiff + 0.5 * freqScore;                // pondération (tu peux ajuster 0.5)
+
+  return { pair: [i, j], score: interestScore };
+});
+
+// Trier par score croissant => les duels les plus intéressants en premier
+scoredPairs.sort((a, b) => a.score - b.score);
+
+// Sélectionner les NB_DUELS premiers duels
+remainingPairs = scoredPairs.slice(0, NB_DUELS).map(p => p.pair);
+
+// Tu peux mettre à jour freqMap ici si tu veux l'utiliser plus loin
+
   duelCount = 0;
   results = [];
 

@@ -122,7 +122,7 @@
 
 <script>
 // ================== CONFIG ====================
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyEbnWySTKz7WhhfNaXeMLHshZHp8l6n77MQN4naT7z9rKd5L47FuJjuixbGFd-4z3n/exec"; 
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyhWsF2d4SuFSBMYbMdIhHwEeU4U7FPMRHZ1Xe3B9HLfPyI9CZYCFS0MwXdcJOZrq6B/exec"; 
 const NB_ITEMS = 10;  
 const NB_DUELS = 20; // Nombre de duels par participant
 const K_FACTOR = 32; // Le même que dans Apps Script
@@ -204,10 +204,14 @@ const items = [
 
 // Variables globales
 let playerName = "";
-let currentPair = null;        // [indexA, indexB] indices dans "items" (pas Elo Index)
-let remainingPairs = [];       // liste des paires à comparer
-let duelCount = 0;             // compteur de duels effectués
-let results = [];              // On stocke ici { winner, loser } pour l'envoi final
+let currentPair = null;        
+let remainingPairs = [];
+let duelCount = 0;
+let results = [];
+
+// AJOUT ICI
+let votingEnded = false;
+
 
 /**
  * Au chargement de la page, on récupère les ELO actuels depuis la Sheet
@@ -294,6 +298,11 @@ function nextDuel() {
 }
 
 function choose(side) {
+  // AJOUT
+  if (votingEnded) {
+    // Si on a déjà fini, on ignore ce clic
+    return;
+  }
   let leftI  = currentPair[0];
   let rightI = currentPair[1];
 
@@ -336,6 +345,9 @@ function updateElo(idxW, idxL) {
  * { name, duels: [ {winner, loser}, ... ] }
  */
 function endVoting() {
+  // AJOUT LIGNE
+  votingEnded = true;
+    document.getElementById("duelScreen").classList.add("hidden");
   const formData = new URLSearchParams();
   formData.append("name", playerName);
   formData.append("duels", JSON.stringify(results));
@@ -360,21 +372,22 @@ function endVoting() {
 
 
 function displayFinalResults(finalItems, participants) {
-  let html = "<h3>Classement global</h3><ol>";
+  let html = "<h3>Classement global (Elo)</h3><ol>";
   finalItems.forEach(it => {
     html += `<li>${it.title} (Elo: ${it.rating})</li>`;
   });
   html += "</ol>";
 
-  html += "<h3>Participants</h3><ul>";
-  participants.forEach(name => {
-    html += `<li>${name}</li>`;
+  html += "<h3>Classement perso de chaque participant</h3><ul>";
+  participants.forEach(p => {
+    html += `<li><b>${p.name}</b> : ${p.personalRanking}</li>`;
   });
   html += "</ul>";
 
   document.getElementById("finalRanking").innerHTML = html;
   document.getElementById("resultsScreen").classList.remove("hidden");
 }
+
 
 /** Mélanger un tableau in-place */
 function shuffle(array) {

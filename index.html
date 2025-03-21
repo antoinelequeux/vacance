@@ -32,12 +32,14 @@
   <div id="duelContainer" class="image-container">
     <div class="option">
       <img id="leftImg" src="" alt="">
-      <div id="leftTitle"></div>
+      <div id="leftTitle" style="font-weight: bold;"></div>
+      <p id="leftDesc" style="font-style: italic;"></p>
       <button onclick="choose('left')">Choisir cette image</button>
     </div>
     <div class="option">
       <img id="rightImg" src="" alt="">
-      <div id="rightTitle"></div>
+      <div id="rightTitle" style="font-weight: bold;"></div>
+      <p id="rightDesc" style="font-style: italic;"></p>
       <button onclick="choose('right')">Choisir cette image</button>
     </div>
   </div>
@@ -58,20 +60,80 @@
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz9KUfLh2XfA-ppzlbd4yba0Ch2IbVBh5fBHl07et3eBrLZ0CtGwpYZ9RZNVyby57x5/exec"; 
 const NB_ITEMS = 10;  
 const NB_DUELS = 20; // Nombre de duels par participant
-const K_FACTOR = 32; // le même que dans Apps Script
+const K_FACTOR = 32; // Le même que dans Apps Script
 
-// Tes 10 images (chemin, titre, description éventuellement)
+// Tes 10 images (chemin, titre, description)
 const items = [
-  { index: 0, img: "Guyane/Kaw.jpeg",  title: "🐊 Kaw – Journée + nuit au Camp Caïman",  description: "Plonge au cœur des marais de Kaw, entre ciel rose et brume mystérieuse. Croisière au coucher du soleil, yeux qui brillent dans la nuit (coucou les caïmans), et nuit magique au camp, en pleine nature (dans un lit). Déconnexion garantie.",  elo: 1000 },
-  { index: 1, img: "Guyane/oiapoque.jpeg",  title: "🎉 Oiapoque – Fête + nuit chez Rona",   description: "Passe la frontière pour une soirée brésilienne comme tu les rêves : musique, danse, chaleur humaine. Et pour couronner le tout, nuit chez Rona, une ambiance locale, simple et authentique. T’en sortiras avec le sourire collé au visage",  elo: 1000 },
-  { index: 2, img: "Guyane/CSG.jpeg",  title: "🚀 Visite du CSG (Centre Spatial Guyanais)",   description: "Explore le cœur de l’aventure spatiale européenne. Fusées, technologie de pointe, étoiles plein les yeux. C’est pas tous les jours qu’on peut marcher là où Ariane décolle !",  elo: 1000 },
-  { index: 3, img: "Guyane/iledusalut.jpeg",  title: "🌊 Îles du Salut – Une journée d’évasion historique",   description: "Embarque pour une traversée vers les mythiques Îles du Salut. Plages paradisiaques, ruines chargées d’histoire et singes curieux… Le combo parfait entre détente, aventure et frissons du passé.",  elo: 1000 },
-  { index: 4, img: "Guyane/TORTUE.jpeg",  title: "🐢 Éclosion de tortues – Instant magique",   description: "Assiste à l’un des plus beaux spectacles de la nature : des bébés tortues rejoignant l’océan. C’est pur, fragile, émouvant. Un moment rare, qu’on n’oublie jamais.",  elo: 1000 },
-  { index: 5, img: "Guyane/savane.jpeg",  title: "🪨 Savane Roche – Nuit en carbet & lever de soleil dans la jungle",   description: "Imagine-toi, bercé par les sons de la forêt, dormant en carbet, puis réveillé par un lever de soleil irréel sur la canopée. Silence total. Juste toi, la nature, et une vue à couper le souffle.",  elo: 1000 },
-  { index: 6, img: "Guyane/petitsautmieux.jpeg",  title: "🌿 Petit Saut – Pirogue et Nuit dans la jungle",   description: "Pirogue, nuit en hamac, bruits de la forêt, et immersion totale. Si tu veux vivre la jungle, c’est ici que ça se passe. Authentique et sauvage. C'est ici que vous avez le plus de chance de voir tout les animaux ! Pêche, barbecue, observation !",  elo: 1000 },
-  { index: 7, img: "Guyane/Petitsaut.jpeg",  title: "🚣‍♀️ Petit Saut en KAYAK – Journée nature chill",   description: "Pagaye au fil de l’eau, entre criques calmes et jungle luxuriante. Une journée tranquille, parfaite pour se reconnecter avec la nature… mais version douce. (Sans nuit et moins d'animaux)",  elo: 1000 },
-  { index: 8, img: "Guyane/Cacao.jpeg",  title: "🥥 Cacao – Le charme Hmong en pleine forêt" ,  description: "Direction le village de Cacao pour un marché dépaysant, une cuisine savoureuse et une découverte touchante de la culture Hmong. Bonus : papillons géants et artisanat à tomber.",  elo: 1000 },
-  { index: 9, img: "Guyane/Saul.jpeg", title: "🌄 Saül – 2/3 jours en lodge, paradis isolé",  description: "Cap vers le bout du monde. À Saül, pas de route, juste des sentiers, des cascades secrètes et une forêt à perte de vue. Lodge cosy, randos incroyables, pureté absolue. Le vrai luxe, c’est là.", elo: 1000 }
+  {
+    index: 0,
+    img: "Guyane/Kaw.jpeg",
+    title: "🐊 Kaw – Journée + nuit au Camp Caïman",
+    description: "Plonge au cœur des marais de Kaw, entre ciel rose et brume mystérieuse. Croisière au coucher du soleil, yeux qui brillent dans la nuit (coucou les caïmans), et nuit magique au camp, en pleine nature (dans un lit). Déconnexion garantie.",
+    elo: 1000
+  },
+  {
+    index: 1,
+    img: "Guyane/oiapoque.jpeg",
+    title: "🎉 Oiapoque – Fête + nuit chez Rona",
+    description: "Passe la frontière pour une soirée brésilienne comme tu les rêves : musique, danse, chaleur humaine. Et pour couronner le tout, nuit chez Rona, une ambiance locale, simple et authentique. T’en sortiras avec le sourire collé au visage.",
+    elo: 1000
+  },
+  {
+    index: 2,
+    img: "Guyane/CSG.jpeg",
+    title: "🚀 Visite du CSG (Centre Spatial Guyanais)",
+    description: "Explore le cœur de l’aventure spatiale européenne. Fusées, technologie de pointe, étoiles plein les yeux. C’est pas tous les jours qu’on peut marcher là où Ariane décolle !",
+    elo: 1000
+  },
+  {
+    index: 3,
+    img: "Guyane/iledusalut.jpeg",
+    title: "🌊 Îles du Salut – Une journée d’évasion historique",
+    description: "Embarque pour une traversée vers les mythiques Îles du Salut. Plages paradisiaques, ruines chargées d’histoire et singes curieux… Le combo parfait entre détente, aventure et frissons du passé.",
+    elo: 1000
+  },
+  {
+    index: 4,
+    img: "Guyane/TORTUE.jpeg",
+    title: "🐢 Éclosion de tortues – Instant magique",
+    description: "Assiste à l’un des plus beaux spectacles de la nature : des bébés tortues rejoignant l’océan. C’est pur, fragile, émouvant. Un moment rare, qu’on n’oublie jamais.",
+    elo: 1000
+  },
+  {
+    index: 5,
+    img: "Guyane/savane.jpeg",
+    title: "🪨 Savane Roche – Nuit en carbet & lever de soleil",
+    description: "Imagine-toi, bercé par les sons de la forêt, dormant en carbet, puis réveillé par un lever de soleil irréel sur la canopée. Silence total. Juste toi, la nature, et une vue à couper le souffle.",
+    elo: 1000
+  },
+  {
+    index: 6,
+    img: "Guyane/petitsautmieux.jpeg",
+    title: "🌿 Petit Saut – Pirogue et Nuit dans la jungle",
+    description: "Pirogue, nuit en hamac, bruits de la forêt, et immersion totale. Si tu veux vivre la jungle, c’est ici que ça se passe. Authentique et sauvage. C'est ici que vous avez le plus de chance de voir tout les animaux ! Pêche, barbecue, observation !",
+    elo: 1000
+  },
+  {
+    index: 7,
+    img: "Guyane/Petitsaut.jpeg",
+    title: "🚣‍♀️ Petit Saut en KAYAK – Journée nature chill",
+    description: "Pagaye au fil de l’eau, entre criques calmes et jungle luxuriante. Une journée tranquille, parfaite pour se reconnecter avec la nature… mais version douce. (Sans nuit et moins d'animaux)",
+    elo: 1000
+  },
+  {
+    index: 8,
+    img: "Guyane/Cacao.jpeg",
+    title: "🥥 Cacao – Le charme Hmong en pleine forêt",
+    description: "Direction le village de Cacao pour un marché dépaysant, une cuisine savoureuse et une découverte touchante de la culture Hmong. Bonus : papillons géants et artisanat à tomber.",
+    elo: 1000
+  },
+  {
+    index: 9,
+    img: "Guyane/Saul.jpeg",
+    title: "🌄 Saül – 2/3 jours en lodge, paradis isolé",
+    description: "Cap vers le bout du monde. À Saül, pas de route, juste des sentiers, des cascades secrètes et une forêt à perte de vue. Lodge cosy, randos incroyables, pureté absolue. Le vrai luxe, c’est là.",
+    elo: 1000
+  },
 ];
 // =============================================
 
@@ -96,14 +158,12 @@ function fetchCurrentRatings() {
       // data = { items: [ {index, title, rating}, ... ] }
       let sheetItems = data.items;
       // Mettre à jour localement le Elo de nos 10 items
-      // On matche par index
       sheetItems.forEach(si => {
         let local = items.find(x => x.index == si.index);
         if (local) {
           local.elo = si.rating;
         }
       });
-      // Le user verra le startScreen
       document.getElementById("startScreen").classList.remove("hidden");
     })
     .catch(err => {
@@ -122,21 +182,18 @@ function startVoting() {
   }
   playerName = nameInput.value;
 
-  // On masque l'écran de démarrage
   document.getElementById("startScreen").classList.add("hidden");
-  // On génère un set de NB_DUELS paires (aléatoires)
-  // Approche simple : on pioche au hasard dans toutes les paires (0..9, j>i)
-  // On évite de tomber 2 fois sur la même paire, évidemment
+
+  // Générez un set de NB_DUELS paires (aléatoires) depuis les 45 paires possibles (10 items => C(10,2) = 45)
   let allPairs = [];
   for (let i = 0; i < NB_ITEMS; i++) {
-    for (let j = i+1; j < NB_ITEMS; j++) {
-      allPairs.push([i,j]);
+    for (let j = i + 1; j < NB_ITEMS; j++) {
+      allPairs.push([i, j]);
     }
   }
   shuffle(allPairs);
-  // On prend les NB_DUELS premières paires
-  remainingPairs = allPairs.slice(0, NB_DUELS);
 
+  remainingPairs = allPairs.slice(0, NB_DUELS);
   duelCount = 0;
   results = [];
 
@@ -156,12 +213,17 @@ function nextDuel() {
   let leftItem  = items[currentPair[0]];
   let rightItem = items[currentPair[1]];
 
-  document.getElementById("leftImg").src      = leftItem.img;
-  document.getElementById("leftTitle").innerText  = leftItem.title;
+  // Remplir l'image, titre et description côté gauche
+  document.getElementById("leftImg").src = leftItem.img;
+  document.getElementById("leftTitle").innerText = leftItem.title;
+  document.getElementById("leftDesc").innerText  = leftItem.description;
 
-  document.getElementById("rightImg").src     = rightItem.img;
+  // Remplir l'image, titre et description côté droit
+  document.getElementById("rightImg").src = rightItem.img;
   document.getElementById("rightTitle").innerText = rightItem.title;
+  document.getElementById("rightDesc").innerText = rightItem.description;
 
+  // Indiquer la progression
   document.getElementById("progress").innerText =
     `Duel ${duelCount} / ${NB_DUELS}`;
 }
@@ -177,18 +239,17 @@ function choose(side) {
   updateElo(winnerIndex, loserIndex);
 
   // On garde en mémoire le résultat pour doPost
-  let winnerGlobalIndex = items[winnerIndex].index; // ex: 3
-  let loserGlobalIndex  = items[loserIndex].index;  // ex: 5
+  let winnerGlobalIndex = items[winnerIndex].index; 
+  let loserGlobalIndex  = items[loserIndex].index;  
   results.push({ winner: winnerGlobalIndex, loser: loserGlobalIndex });
 
   nextDuel();
 }
 
 /**
- * Calcul Elo local
- * (c'est optionnel : on le fait localement juste pour info,
- *  le vrai update final est re-fait dans doPost. Mais ça nous
- *  permet d'afficher un Elo final "cohérent" avant l'envoi.)
+ * Calcul Elo local (optionnel)
+ * On le fait pour afficher les Elo persos, 
+ * mais le vrai update se fera dans Apps Script via doPost.
  */
 function updateElo(idxW, idxL) {
   let ratingW = items[idxW].elo;
@@ -237,7 +298,7 @@ function endVoting() {
 }
 
 function displayFinalResults(finalItems) {
-  // finalItems est déjà trié par rating décroissant (voir doPost)
+  // finalItems est déjà trié par rating décroissant (voir doPost dans Apps Script)
   let html = "";
   finalItems.forEach(it => {
     html += `<li>${it.title} (Elo: ${it.rating})</li>`;

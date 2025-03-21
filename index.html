@@ -278,11 +278,15 @@ function endVoting() {
     duels: results
   };
 
-  fetch(SCRIPT_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
-  })
+const formData = new URLSearchParams();
+formData.append("name", playerName);
+formData.append("duels", JSON.stringify(results));
+
+fetch(SCRIPT_URL, {
+  method: 'POST',
+  body: formData 
+})
+
   .then(r => r.json())
   .then(data => {
     if (data.status === "success") {

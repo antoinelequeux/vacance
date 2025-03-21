@@ -255,7 +255,8 @@ function startVoting() {
 
   document.getElementById("startScreen").classList.add("hidden");
 
-  // === SMART SAMPLING ===
+// === SMART BALANCED SAMPLING : chaque item doit apparaître au moins une fois ===
+
 let allPairs = [];
 for (let i = 0; i < NB_ITEMS; i++) {
   for (let j = i + 1; j < NB_ITEMS; j++) {
@@ -263,17 +264,56 @@ for (let i = 0; i < NB_ITEMS; i++) {
   }
 }
 
-// Fréquence initiale à zéro
+// Mélanger aléatoirement les 45 paires
+shuffle(allPairs);
+
+// Suivi des apparitions par item
 let freqMap = new Array(NB_ITEMS).fill(0);
+let remainingPairs = [];
+let usedPairs = new Set();
 
-// On attribue un "score d'intérêt" à chaque paire
-let scoredPairs = allPairs.map(([i, j]) => {
-  let eloDiff = Math.abs(items[i].elo - items[j].elo);          // priorité aux duels équilibrés
-  let freqScore = freqMap[i] + freqMap[j];                      // priorité aux moins vus
-  let interestScore = eloDiff + 0.5 * freqScore;                // pondération (tu peux ajuster 0.5)
+// Fonction pour générer une clé unique pour une paire
+const pairKey = (a, b) => [Math.min(a, b), Math.max(a, b)].join("-");
 
-  return { pair: [i, j], score: interestScore };
+// Étape 1 : s'assurer que chaque item apparaisse au moins une fois
+let covered = new Set();
+for (let i = 0; i < allPairs.length && covered.size < NB_ITEMS; i++) {
+  let [a, b] = allPairs[i];
+  if (!covered.has(a) || !covered.has(b)) {
+    let key = pairKey(a, b);
+    if (!usedPairs.has(key)) {
+      remainingPairs.push([a, b]);
+      usedPairs.add(key);
+      freqMap[a]++;
+      freqMap[b]++;
+      covered.add(a);
+      covered.add(b);
+    }
+  }
+}
+
+// Étape 2 : compléter jusqu'à 20 duels avec contrainte de max apparitions
+let maxAllowed = 5;
+for (let i = 0; i < allPairs.length && remainingPairs.length < NB_DUELS; i++) {
+  let [a, b] = allPairs[i];
+  let key = pairKey(a, b);
+
+  if (usedPairs.has(key)) continue;
+
+  if (freqMap[a] < maxAllowed && freqMap[b] < maxAllowed) {
+    remainingPairs.push([a, b]);
+    usedPairs.add(key);
+    freqMap[a]++;
+    freqMap[b]++;
+  }
+}
+
+// Optionnel : log du nombre d’apparitions par item
+console.log("Fréquences finales :");
+items.forEach((item, i) => {
+  console.log(`${item.title} → ${freqMap[i]} apparitions`);
 });
+
 
 // Trier par score croissant => les duels les plus intéressants en premier
 scoredPairs.sort((a, b) => a.score - b.score);

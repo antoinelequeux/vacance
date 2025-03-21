@@ -93,7 +93,7 @@
 <!-- Écran 2 : duels -->
 <div id="duelScreen" class="hidden">
   <h2>Votez pour votre image préférée</h2>
-  <p>Il y aura 20 duels.</p>
+  <p>Il y aura 45 duels.</p>
   
   <div id="duelContainer" class="image-container">
     <div class="option">
@@ -126,7 +126,7 @@
 // ================== CONFIG ====================
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyZ6ZvcFpIFkwcDgYiR_hiaD7v29ZtuA8IuXE0P1HOHcW8EP1W3vNfRyBTlvfCaqjQ/exec"; 
 const NB_ITEMS = 10;  
-const NB_DUELS = 20; // Nombre de duels par participant
+const NB_DUELS = 45; // Nombre de duels par participant
 const K_FACTOR = 32; // Le même que dans Apps Script
 
 // Tes 10 images (chemin, titre, description)
@@ -255,8 +255,7 @@ function startVoting() {
 
   document.getElementById("startScreen").classList.add("hidden");
 
-// === SMART BALANCED SAMPLING : chaque item doit apparaître au moins une fois ===
-
+// Générer les 45 paires possibles
 let allPairs = [];
 for (let i = 0; i < NB_ITEMS; i++) {
   for (let j = i + 1; j < NB_ITEMS; j++) {
@@ -264,55 +263,12 @@ for (let i = 0; i < NB_ITEMS; i++) {
   }
 }
 
-// Mélanger aléatoirement les 45 paires
+// Mélanger les paires aléatoirement
 shuffle(allPairs);
 
-// Suivi des apparitions par item
-let freqMap = new Array(NB_ITEMS).fill(0);
-remainingPairs = [];
-let usedPairs = new Set();
+// Sélectionner les NB_DUELS premiers duels (20 duels)
+remainingPairs = allPairs.slice(0, NB_DUELS);
 
-// Fonction pour générer une clé unique pour une paire
-const pairKey = (a, b) => [Math.min(a, b), Math.max(a, b)].join("-");
-
-// Étape 1 : s'assurer que chaque item apparaisse au moins une fois
-let covered = new Set();
-for (let i = 0; i < allPairs.length && covered.size < NB_ITEMS; i++) {
-  let [a, b] = allPairs[i];
-  if (!covered.has(a) || !covered.has(b)) {
-    let key = pairKey(a, b);
-    if (!usedPairs.has(key)) {
-      remainingPairs.push([a, b]);
-      usedPairs.add(key);
-      freqMap[a]++;
-      freqMap[b]++;
-      covered.add(a);
-      covered.add(b);
-    }
-  }
-}
-
-// Étape 2 : compléter jusqu'à 20 duels avec contrainte de max apparitions
-let maxAllowed = 5;
-for (let i = 0; i < allPairs.length && remainingPairs.length < NB_DUELS; i++) {
-  let [a, b] = allPairs[i];
-  let key = pairKey(a, b);
-
-  if (usedPairs.has(key)) continue;
-
-  if (freqMap[a] < maxAllowed && freqMap[b] < maxAllowed) {
-    remainingPairs.push([a, b]);
-    usedPairs.add(key);
-    freqMap[a]++;
-    freqMap[b]++;
-  }
-}
-
-// Optionnel : log du nombre d’apparitions par item
-console.log("Fréquences finales :");
-items.forEach((item, i) => {
-  console.log(`${item.title} → ${freqMap[i]} apparitions`);
-});
 
 
 

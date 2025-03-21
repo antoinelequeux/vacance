@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Vote Elo - 10 Images</title>
+  <style>
+    body { font-family: sans-serif; max-width: 600px; margin: 20px auto; }
+    h1, h2 { text-align: center; }
+    .hidden { display: none; }
+    .image-container { display: flex; justify-content: space-around; margin-top: 20px; }
+    .option { width: 45%; text-align: center; }
+    img { max-width: 100%; height: auto; border: 1px solid #ccc; margin-bottom: 5px; }
+    button { margin: 5px; padding: 10px 20px; font-size: 16px; cursor: pointer; }
+    .results { margin: 20px 0; }
+    .results li { margin-bottom: 5px; }
+  </style>
+</head>
+<body>
+
+<h1>Comparaison d'images (Elo)</h1>
+
+<!-- Écran 1 : entrer nom + démarrer -->
+<div id="startScreen">
+  <p>Entrez votre nom : <input type="text" id="playerName" placeholder="Ex: Alice"></p>
+  <button onclick="startVoting()">Commencer</button>
+</div>
+
+<!-- Écran 2 : duels -->
+<div id="duelScreen" class="hidden">
+  <h2>Votez sur votre image préférée</h2>
+  <p>Il y aura 20 duels.</p>
+  <div id="duelContainer" class="image-container">
+    <div class="option">
+      <img id="leftImg" src="" alt="">
+      <div id="leftTitle"></div>
+      <button onclick="choose('left')">Choisir cette image</button>
+    </div>
+    <div class="option">
+      <img id="rightImg" src="" alt="">
+      <div id="rightTitle"></div>
+      <button onclick="choose('right')">Choisir cette image</button>
+    </div>
+  </div>
+  <p id="progress"></p>
+</div>
+
+<!-- Écran 3 : résultats finaux -->
+<div id="resultsScreen" class="hidden">
+  <h2>Merci, vos votes ont été pris en compte !</h2>
+  <div class="results">
+    <h3>Classement (Elo) à jour</h3>
+    <ol id="finalRanking"></ol>
+  </div>
+</div>
+
+<script>
+// ================== CONFIG ====================
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz9KUfLh2XfA-ppzlbd4yba0Ch2IbVBh5fBHl07et3eBrLZ0CtGwpYZ9RZNVyby57x5/exec"; 
+const NB_ITEMS = 10;  
+const NB_DUELS = 20; // Nombre de duels par participant
+const K_FACTOR = 32; // le même que dans Apps Script
+
+// Tes 10 images (chemin, titre, description éventuellement)
+const items = [
+  { index: 0, img: "/Users/antoinelequeux/Desktop/Guyane/Kaw.jpeg",  title: "🐊 Kaw – Journée + nuit au Camp Caïman",  description: "Plonge au cœur des marais de Kaw, entre ciel rose et brume mystérieuse. Croisière au coucher du soleil, yeux qui brillent dans la nuit (coucou les caïmans), et nuit magique au camp, en pleine nature (dans un lit). Déconnexion garantie.",  elo: 1000 },
+  { index: 1, img: "/Users/antoinelequeux/Desktop/Guyane/oiapoque.jpeg",  title: "🎉 Oiapoque – Fête + nuit chez Rona"   description: "Passe la frontière pour une soirée brésilienne comme tu les rêves : musique, danse, chaleur humaine. Et pour couronner le tout, nuit chez Rona, une ambiance locale, simple et authentique. T’en sortiras avec le sourire collé au visage",  elo: 1000 },
+  { index: 2, img: "/Users/antoinelequeux/Desktop/Guyane/CSG.jpeg",  title: "🚀 Visite du CSG (Centre Spatial Guyanais)"   description: "Explore le cœur de l’aventure spatiale européenne. Fusées, technologie de pointe, étoiles plein les yeux. C’est pas tous les jours qu’on peut marcher là où Ariane décolle !",  elo: 1000 },
+  { index: 3, img: "/Users/antoinelequeux/Desktop/Guyane/iledusalut.jpeg",  title: "🌊 Îles du Salut – Une journée d’évasion historique"   description: "Embarque pour une traversée vers les mythiques Îles du Salut. Plages paradisiaques, ruines chargées d’histoire et singes curieux… Le combo parfait entre détente, aventure et frissons du passé.",  elo: 1000 },
+  { index: 4, img: "/Users/antoinelequeux/Desktop/Guyane/TORTUE.jpeg",  title: "🐢 Éclosion de tortues – Instant magique"   description: "Assiste à l’un des plus beaux spectacles de la nature : des bébés tortues rejoignant l’océan. C’est pur, fragile, émouvant. Un moment rare, qu’on n’oublie jamais.",  elo: 1000 },
+  { index: 5, img: "/Users/antoinelequeux/Desktop/Guyane/savane.jpeg",  title: "🪨 Savane Roche – Nuit en carbet & lever de soleil dans la jungle"   description: "Imagine-toi, bercé par les sons de la forêt, dormant en carbet, puis réveillé par un lever de soleil irréel sur la canopée. Silence total. Juste toi, la nature, et une vue à couper le souffle.",  elo: 1000 },
+  { index: 6, img: "/Users/antoinelequeux/Desktop/Guyane/petitsautmieux.jpeg",  title: "🌿 Petit Saut – Pirogue et Nuit dans la jungle"   description: "Pirogue, nuit en hamac, bruits de la forêt, et immersion totale. Si tu veux "vivre la jungle", c’est ici que ça se passe. Authentique et sauvage. C'est ici que vous avez le plus de chance de voir tout les animaux ! Pêche, barbecue, observation !",  elo: 1000 },
+  { index: 7, img: "/Users/antoinelequeux/Desktop/Guyane/Petitsaut.jpeg",  title: "🚣‍♀️ Petit Saut en KAYAK – Journée nature chill"   description: "Pagaye au fil de l’eau, entre criques calmes et jungle luxuriante. Une journée tranquille, parfaite pour se reconnecter avec la nature… mais version douce. (Sans nuit et moins d'animaux)",  elo: 1000 },
+  { index: 8, img: "/Users/antoinelequeux/Desktop/Guyane/Cacao.jpeg",  title: "🥥 Cacao – Le charme Hmong en pleine forêt"   description: "Direction le village de Cacao pour un marché dépaysant, une cuisine savoureuse et une découverte touchante de la culture Hmong. Bonus : papillons géants et artisanat à tomber.",  elo: 1000 },
+  { index: 9, img: "/Users/antoinelequeux/Desktop/Guyane/Saul.jpeg", title: "🌄 Saül – 2/3 jours en lodge, paradis isolé"  description: "Cap vers le bout du monde. À Saül, pas de route, juste des sentiers, des cascades secrètes et une forêt à perte de vue. Lodge cosy, randos incroyables, pureté absolue. Le vrai luxe, c’est là.", elo: 1000 }
+];
+// =============================================
+
+// Variables globales
+let playerName = "";
+let currentPair = null;        // [indexA, indexB] indices dans "items" (pas Elo Index)
+let remainingPairs = [];       // liste des paires à comparer
+let duelCount = 0;             // compteur de duels effectués
+let results = [];              // On stocke ici { winner, loser } pour l'envoi final
+
+/**
+ * Au chargement de la page, on récupère les ELO actuels depuis la Sheet
+ */
+window.onload = () => {
+  fetchCurrentRatings();
+};
+
+function fetchCurrentRatings() {
+  fetch(SCRIPT_URL)
+    .then(r => r.json())
+    .then(data => {
+      // data = { items: [ {index, title, rating}, ... ] }
+      let sheetItems = data.items;
+      // Mettre à jour localement le Elo de nos 10 items
+      // On matche par index
+      sheetItems.forEach(si => {
+        let local = items.find(x => x.index == si.index);
+        if (local) {
+          local.elo = si.rating;
+        }
+      });
+      // Le user verra le startScreen
+      document.getElementById("startScreen").classList.remove("hidden");
+    })
+    .catch(err => {
+      alert("Erreur doGet : " + err);
+    });
+}
+
+/**
+ * L'utilisateur clique "Commencer"
+ */
+function startVoting() {
+  let nameInput = document.getElementById("playerName");
+  if (!nameInput.value) {
+    alert("Merci d'entrer un nom !");
+    return;
+  }
+  playerName = nameInput.value;
+
+  // On masque l'écran de démarrage
+  document.getElementById("startScreen").classList.add("hidden");
+  // On génère un set de NB_DUELS paires (aléatoires)
+  // Approche simple : on pioche au hasard dans toutes les paires (0..9, j>i)
+  // On évite de tomber 2 fois sur la même paire, évidemment
+  let allPairs = [];
+  for (let i = 0; i < NB_ITEMS; i++) {
+    for (let j = i+1; j < NB_ITEMS; j++) {
+      allPairs.push([i,j]);
+    }
+  }
+  shuffle(allPairs);
+  // On prend les NB_DUELS premières paires
+  remainingPairs = allPairs.slice(0, NB_DUELS);
+
+  duelCount = 0;
+  results = [];
+
+  document.getElementById("duelScreen").classList.remove("hidden");
+  nextDuel();
+}
+
+function nextDuel() {
+  if (remainingPairs.length === 0) {
+    // Fini
+    endVoting();
+    return;
+  }
+  currentPair = remainingPairs.pop();
+  duelCount++;
+
+  let leftItem  = items[currentPair[0]];
+  let rightItem = items[currentPair[1]];
+
+  document.getElementById("leftImg").src      = leftItem.img;
+  document.getElementById("leftTitle").innerText  = leftItem.title;
+
+  document.getElementById("rightImg").src     = rightItem.img;
+  document.getElementById("rightTitle").innerText = rightItem.title;
+
+  document.getElementById("progress").innerText =
+    `Duel ${duelCount} / ${NB_DUELS}`;
+}
+
+function choose(side) {
+  let leftI  = currentPair[0];
+  let rightI = currentPair[1];
+
+  let winnerIndex = (side === "left") ? leftI : rightI;
+  let loserIndex  = (side === "left") ? rightI : leftI;
+
+  // On met à jour *localement* l'Elo
+  updateElo(winnerIndex, loserIndex);
+
+  // On garde en mémoire le résultat pour doPost
+  let winnerGlobalIndex = items[winnerIndex].index; // ex: 3
+  let loserGlobalIndex  = items[loserIndex].index;  // ex: 5
+  results.push({ winner: winnerGlobalIndex, loser: loserGlobalIndex });
+
+  nextDuel();
+}
+
+/**
+ * Calcul Elo local
+ * (c'est optionnel : on le fait localement juste pour info,
+ *  le vrai update final est re-fait dans doPost. Mais ça nous
+ *  permet d'afficher un Elo final "cohérent" avant l'envoi.)
+ */
+function updateElo(idxW, idxL) {
+  let ratingW = items[idxW].elo;
+  let ratingL = items[idxL].elo;
+
+  // Proba de victoire du winner
+  let pW = 1 / (1 + Math.pow(10, (ratingL - ratingW) / 400));
+  let pL = 1 - pW;
+
+  let newW = ratingW + K_FACTOR * (1 - pW);
+  let newL = ratingL + K_FACTOR * (0 - pL);
+
+  items[idxW].elo = Math.round(newW);
+  items[idxL].elo = Math.round(newL);
+}
+
+/**
+ * Quand tous les duels sont finis, on envoie un doPost
+ * { name, duels: [ {winner, loser}, ... ] }
+ */
+function endVoting() {
+  document.getElementById("duelScreen").classList.add("hidden");
+  
+  let payload = {
+    name: playerName,
+    duels: results
+  };
+
+  fetch(SCRIPT_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.status === "success") {
+      // data.items => le classement final
+      displayFinalResults(data.items);
+    } else {
+      alert("Erreur doPost: " + data.message);
+    }
+  })
+  .catch(err => {
+    alert("Erreur doPost fetch : " + err);
+  });
+}
+
+function displayFinalResults(finalItems) {
+  // finalItems est déjà trié par rating décroissant (voir doPost)
+  let html = "";
+  finalItems.forEach(it => {
+    html += `<li>${it.title} (Elo: ${it.rating})</li>`;
+  });
+  document.getElementById("finalRanking").innerHTML = html;
+  document.getElementById("resultsScreen").classList.remove("hidden");
+}
+
+/** Mélanger un tableau in-place */
+function shuffle(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+}
+</script>
+
+</body>
+</html>

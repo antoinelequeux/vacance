@@ -400,18 +400,16 @@ function displayFinalResults(finalItems, participants) {
   html += "<h3>Classement perso de chaque participant</h3>";
 
   participants.forEach(p => {
-    // Si le participant n'a pas voté, afficher un message simple
-    if (!p.personalRanking) {
-      html += `<h4>${p.name}</h4><p>(Aucun vote)</p>`;
-    } else {
-      html += `<h4>${p.name}</h4>`;
-      html += `<table style="margin:auto; border-collapse: collapse;">`;
-      html += `<tr>
-                  <th style="border-bottom: 1px solid #ccc; padding: 5px;">Destination</th>
-                  <th style="border-bottom: 1px solid #ccc; padding: 5px;">Score</th>
-                </tr>`;
-
-      // On suppose que p.personalRanking est une chaîne de la forme "Titre(score), Titre(score), ..."
+    // Afficher toujours le nom du participant
+    html += `<h4>${p.name}</h4>`;
+    html += `<table style="margin:auto; border-collapse: collapse;">`;
+    html += `<tr>
+               <th style="border-bottom: 1px solid #ccc; padding: 5px;">Destination</th>
+               <th style="border-bottom: 1px solid #ccc; padding: 5px;">Score</th>
+             </tr>`;
+    
+    // Si p.personalRanking existe et n'est pas vide, on affiche les lignes correspondantes
+    if (p.personalRanking) {
       let rankingArray = p.personalRanking.split(", ").map(entry => {
         let match = entry.match(/(.+)\((\d+)\)$/);
         if (match) {
@@ -422,18 +420,18 @@ function displayFinalResults(finalItems, participants) {
 
       rankingArray.forEach(entry => {
         html += `<tr>
-                    <td style="padding: 5px; border-bottom: 1px solid #eee;">${entry.title}</td>
-                    <td style="padding: 5px; border-bottom: 1px solid #eee; text-align:center;">${entry.score}</td>
+                   <td style="padding: 5px; border-bottom: 1px solid #eee;">${entry.title}</td>
+                   <td style="padding: 5px; border-bottom: 1px solid #eee; text-align:center;">${entry.score}</td>
                  </tr>`;
       });
-
-      html += `</table><br>`;
     }
+    html += `</table><br>`;
   });
 
   document.getElementById("finalRanking").innerHTML = html;
   document.getElementById("resultsScreen").classList.remove("hidden");
 }
+
 
 
 

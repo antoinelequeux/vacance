@@ -399,39 +399,42 @@ function displayFinalResults(finalItems, participants) {
 
   html += "<h3>Classement perso de chaque participant</h3>";
 
-participants.forEach(p => {
-  html += `<h4>${p.name}</h4>`;
-  html += `<table style="margin:auto; border-collapse: collapse;">`;
-  html += `<tr><th style="border-bottom: 1px solid #ccc; padding: 5px;">Destination</th><th style="border-bottom: 1px solid #ccc; padding: 5px;">Score</th></tr>`;
-  if (!p.personalRanking) {
-  // Par exemple, on affiche juste qu'il n'a pas voté
-  html += `<h4>${p.name}</h4><p>(Aucun vote)</p>`;
-  return;
-}
-
-  let rankingArray = p.personalRanking.split(", ").map(entry => {
-    let match = entry.match(/(.+)\((\d+)\)$/);
-    if (match) {
-      return { title: match[1], score: parseInt(match[2]) };
+  participants.forEach(p => {
+    // Si le participant n'a pas voté, afficher un message simple
+    if (!p.personalRanking) {
+      html += `<h4>${p.name}</h4><p>(Aucun vote)</p>`;
     } else {
-      return null;
+      html += `<h4>${p.name}</h4>`;
+      html += `<table style="margin:auto; border-collapse: collapse;">`;
+      html += `<tr>
+                  <th style="border-bottom: 1px solid #ccc; padding: 5px;">Destination</th>
+                  <th style="border-bottom: 1px solid #ccc; padding: 5px;">Score</th>
+                </tr>`;
+
+      // On suppose que p.personalRanking est une chaîne de la forme "Titre(score), Titre(score), ..."
+      let rankingArray = p.personalRanking.split(", ").map(entry => {
+        let match = entry.match(/(.+)\((\d+)\)$/);
+        if (match) {
+          return { title: match[1].trim(), score: parseInt(match[2]) };
+        }
+        return null;
+      }).filter(x => x !== null);
+
+      rankingArray.forEach(entry => {
+        html += `<tr>
+                    <td style="padding: 5px; border-bottom: 1px solid #eee;">${entry.title}</td>
+                    <td style="padding: 5px; border-bottom: 1px solid #eee; text-align:center;">${entry.score}</td>
+                 </tr>`;
+      });
+
+      html += `</table><br>`;
     }
-  }).filter(x => x !== null);
-
-  rankingArray.forEach(entry => {
-    html += `<tr>
-      <td style="padding: 5px; border-bottom: 1px solid #eee;">${entry.title}</td>
-      <td style="padding: 5px; border-bottom: 1px solid #eee; text-align:center;">${entry.score}</td>
-    </tr>`;
   });
-
-  html += `</table><br>`;
-});
-
 
   document.getElementById("finalRanking").innerHTML = html;
   document.getElementById("resultsScreen").classList.remove("hidden");
 }
+
 
 
 /** Mélanger un tableau in-place */
@@ -444,20 +447,22 @@ function shuffle(array) {
 
 
   function showResults() {
-  // Masquer l'écran de démarrage
-  //document.getElementById("startScreen").classList.add("hidden");
+  // Désactiver le bouton pour éviter les clics multiples
+  const btn = document.querySelector("button[onclick='showResults()']");
+  btn.disabled = true;
+  btn.innerText = "Chargement en cours...";
 
   // Appeler le doGet pour récupérer les infos (items, participants)
   fetch(SCRIPT_URL)
     .then(r => r.json())
     .then(data => {
-      // data = { items: [...], participants: [...] }
       displayFinalResults(data.items, data.participants);
     })
     .catch(err => {
       alert("Erreur doGet : " + err);
     });
 }
+
 
 </script>
 

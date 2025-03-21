@@ -85,10 +85,14 @@
 <h1>Votez pour les vacances</h1>
 
 <!-- Écran 1 : entrer nom + démarrer -->
-<div id="startScreen">
+<<div id="startScreen">
   <p>Entrez votre nom : <input type="text" id="playerName" placeholder="Ex: Antoine le bg"></p>
   <button onclick="startVoting()">Commencer</button>
+  <br><br>
+  <!-- Nouveau bouton -->
+  <button onclick="showResults()">Voir les résultats</button>
 </div>
+
 
 <!-- Écran 2 : duels -->
 <div id="duelScreen" class="hidden">
@@ -197,7 +201,7 @@ const items = [
   {
     index: 9,
     img: "Guyane/Saul.jpeg",
-    title: "🌄 Saül – 2/3 jours en lodge, paradis isolé",
+    title: "🌄 Saül – 2/3 jours en lodge - paradis isolé",
     description: "Cap vers le bout du monde. À Saül, pas de route, juste des sentiers, des cascades secrètes et une forêt à perte de vue. Lodge cosy, randos incroyables, pureté absolue. Le vrai luxe, c’est là.",
     elo: 1000
   },
@@ -253,7 +257,7 @@ function startVoting() {
   }
   playerName = nameInput.value;
 
-  document.getElementById("startScreen").classList.add("hidden");
+  document.getElementById("startScreen").remove();
 
 // Générer les 45 paires possibles
 let allPairs = [];
@@ -431,6 +435,24 @@ function shuffle(array) {
     [array[i], array[j]] = [array[j], array[i]];
   }
 }
+
+
+  function showResults() {
+  // Masquer l'écran de démarrage
+  document.getElementById("startScreen").classList.add("hidden");
+
+  // Appeler le doGet pour récupérer les infos (items, participants)
+  fetch(SCRIPT_URL)
+    .then(r => r.json())
+    .then(data => {
+      // data = { items: [...], participants: [...] }
+      displayFinalResults(data.items, data.participants);
+    })
+    .catch(err => {
+      alert("Erreur doGet : " + err);
+    });
+}
+
 </script>
 
 </body>
